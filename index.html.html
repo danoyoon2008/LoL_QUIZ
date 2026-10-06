@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LOL 챔피언 퀴즈</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+#stage{position:absolute;left:50%;top:50%;width:min(100vw,177.78vh);aspect-ratio:16/9;transform:translate(-50%,-50%);background:#000;container-type:inline-size}
+#grid{display:grid;grid-template-columns:repeat(16,1fr);grid-template-rows:repeat(11,1fr);gap:1px;width:100%;height:100%}
+.t{background:#161616;overflow:hidden}
+.t img{display:block;width:100%;height:100%;object-fit:cover}
+.o{position:absolute;background:#000;color:#fff;font-size:2.2cqw;line-height:1;padding:.5cqw 1.2cqw;border:1px solid #fff}
+#timer{top:.8cqw;left:50%;transform:translateX(-50%);font-variant-numeric:tabular-nums}
+#count{top:.8cqw;right:.8cqw;font-variant-numeric:tabular-nums}
+#input{bottom:1cqw;left:50%;transform:translateX(-50%);width:28cqw;text-align:center;font-family:inherit;font-size:1.8cqw;outline:none;border:2px solid #fff;padding:.7cqw 1cqw}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="grid"></div>
+  <div id="timer" class="o">00:00</div>
+  <div id="count" class="o">172/172</div>
+  <input id="input" class="o" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
+</div>
+<script>
+const ORDER = "Alistar Annie Ashe Fiddlesticks Jax Kayle MasterYi Morgana Nunu Ryze Sion Sivir Soraka Teemo Tristana TwistedFate Warwick Singed Zilean Evelynn Tryndamere Twitch Karthus Amumu Chogath Anivia Rammus Veigar Kassadin Gangplank Taric Blitzcrank DrMundo Janna Malphite Corki Katarina Nasus Heimerdinger Shaco Udyr Nidalee Poppy Gragas Pantheon Mordekaiser Ezreal Shen Kennen Garen Akali Malzahar Olaf KogMaw XinZhao Vladimir Galio Urgot MissFortune Sona Swain Lux Leblanc Irelia Trundle Cassiopeia Caitlyn Renekton Karma Maokai JarvanIV Nocturne LeeSin Brand Rumble Vayne Orianna Yorick Leona MonkeyKing Skarner Talon Riven Xerath Graves Shyvana Fizz Volibear Ahri Viktor Sejuani Ziggs Nautilus Fiora Lulu Hecarim Varus Darius Draven Jayce Zyra Diana Rengar Syndra Khazix Elise Zed Nami Vi Thresh Quinn Zac Lissandra Aatrox Lucian Jinx Yasuo Velkoz Braum Gnar Azir Kalista RekSai Bard Ekko TahmKench Kindred Illaoi Jhin AurelionSol Taliyah Kled Ivern Camille Xayah Rakan Kayn Ornn Zoe Kaisa Pyke Neeko Sylas Yuumi Qiyana Senna Aphelios Sett Lillia Yone Samira Seraphine Rell Viego Gwen Akshan Vex Zeri Renata Belveth Nilah KSante Milio Naafiri Briar Hwei Smolder Aurora Ambessa Mel Yunara Zaahen".split(" ");
+const ALIAS = {Nunu:["nunu","nunuwillump","누누"],MonkeyKing:["wukong","오공","손오공"],Renata:["renata","레나타"],DrMundo:["mundo","문도"],JarvanIV:["jarvan","자르반"],AurelionSol:["aurelion","아우렐리온솔"],TahmKench:["tahm","탐켄치"]};
+const TOTAL = ORDER.length;
+const norm = s => s.toLowerCase().replace(/[^0-9a-z가-힣]/g, "");
+const $ = id => document.getElementById(id);
+const grid = $("grid"), input = $("input"), countEl = $("count"), timerEl = $("timer");
+const list = ORDER, tiles = [], done = [], names = ORDER.map(id => [norm(id)].concat((ALIAS[id] || []).map(norm)));
+let remaining = TOTAL, version = "", t0 = Date.now(), timerId = null;
+
+countEl.textContent = TOTAL + "/" + TOTAL;
+
+function tick() {
+  const s = Math.floor((Date.now() - t0) / 1000);
+  timerEl.textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+}
+
+function reveal(i) {
+  done[i] = true;
+  const img = document.createElement("img");
+  tiles[i].appendChild(img);
+  ready.then(() => { if (version) img.src = "https://ddragon.leagueoflegends.com/cdn/" + version + "/img/champion/" + list[i] + ".png"; });
+  remaining--;
+  countEl.textContent = remaining + "/" + TOTAL;
+  if (remaining === 0) { clearInterval(timerId); tick(); input.disabled = true; }
+}
+
+input.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const q = norm(input.value);
+  if (!q) return;
+  const i = names.findIndex((n, k) => !done[k] && n.includes(q));
+  if (i >= 0) { reveal(i); input.value = ""; }
+});
+
+list.forEach(() => { const t = document.createElement("div"); t.className = "t"; grid.appendChild(t); tiles.push(t); });
+timerId = setInterval(tick, 200);
+input.focus();
+
+const ready = (async () => {
+  try {
+    const base = "https://ddragon.leagueoflegends.com/";
+    version = (await (await fetch(base + "api/versions.json")).json())[0];
+    const ko = await (await fetch(base + "cdn/" + version + "/data/ko_KR/champion.json")).json();
+    list.forEach((id, i) => { if (ko.data[id]) names[i].push(norm(ko.data[id].name)); });
+  } catch (e) { console.error(e); }
+})();
+</script>
+</body>
+</html>

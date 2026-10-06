@@ -9,7 +9,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
 #stage{position:absolute;left:50%;top:50%;width:min(100vw,177.78vh);aspect-ratio:16/9;transform:translate(-50%,-50%);background:#000;container-type:inline-size}
 #grid{display:grid;grid-template-columns:repeat(16,1fr);grid-template-rows:repeat(11,1fr);gap:1px;width:100%;height:100%}
 .t{background:#161616;overflow:hidden}
-.t img{display:block;width:100%;height:100%;object-fit:cover}
+.t img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 12%}
 .o{position:absolute;background:#000;color:#fff;font-size:2.2cqw;line-height:1;padding:.5cqw 1.2cqw;border:1px solid #fff}
 #timer{top:.8cqw;left:50%;transform:translateX(-50%);font-variant-numeric:tabular-nums}
 #count{top:.8cqw;right:.8cqw;font-variant-numeric:tabular-nums}
@@ -26,11 +26,12 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
 <script>
 const ORDER = "Alistar Annie Ashe Fiddlesticks Jax Kayle MasterYi Morgana Nunu Ryze Sion Sivir Soraka Teemo Tristana TwistedFate Warwick Singed Zilean Evelynn Tryndamere Twitch Karthus Amumu Chogath Anivia Rammus Veigar Kassadin Gangplank Taric Blitzcrank DrMundo Janna Malphite Corki Katarina Nasus Heimerdinger Shaco Udyr Nidalee Poppy Gragas Pantheon Mordekaiser Ezreal Shen Kennen Garen Akali Malzahar Olaf KogMaw XinZhao Vladimir Galio Urgot MissFortune Sona Swain Lux Leblanc Irelia Trundle Cassiopeia Caitlyn Renekton Karma Maokai JarvanIV Nocturne LeeSin Brand Rumble Vayne Orianna Yorick Leona MonkeyKing Skarner Talon Riven Xerath Graves Shyvana Fizz Volibear Ahri Viktor Sejuani Ziggs Nautilus Fiora Lulu Hecarim Varus Darius Draven Jayce Zyra Diana Rengar Syndra Khazix Elise Zed Nami Vi Thresh Quinn Zac Lissandra Aatrox Lucian Jinx Yasuo Velkoz Braum Gnar Azir Kalista RekSai Bard Ekko TahmKench Kindred Illaoi Jhin AurelionSol Taliyah Kled Ivern Camille Xayah Rakan Kayn Ornn Zoe Kaisa Pyke Neeko Sylas Yuumi Qiyana Senna Aphelios Sett Lillia Yone Samira Seraphine Rell Viego Gwen Akshan Vex Zeri Renata Belveth Nilah KSante Milio Naafiri Briar Hwei Smolder Aurora Ambessa Mel Yunara Zaahen".split(" ");
 const ALIAS = {Nunu:["nunu","nunuwillump","누누"],MonkeyKing:["wukong","오공","손오공"],Renata:["renata","레나타"],DrMundo:["mundo","문도"],JarvanIV:["jarvan","자르반"],AurelionSol:["aurelion","아우렐리온솔"],TahmKench:["tahm","탐켄치"]};
+const KO = "알리스타 애니 애쉬 피들스틱 잭스 케일 마스터이 모르가나 누누와윌럼프 라이즈 사이온 시비르 소라카 티모 트리스타나 트위스티드페이트 워윅 신지드 질리언 이블린 트린다미어 트위치 카서스 아무무 초가스 애니비아 람머스 베이가 카사딘 갱플랭크 타릭 블리츠크랭크 문도박사 잔나 말파이트 코르키 카타리나 나서스 하이머딩거 샤코 우디르 니달리 뽀삐 그라가스 판테온 모데카이저 이즈리얼 쉔 케넨 가렌 아칼리 말자하 올라프 코그모 신짜오 블라디미르 갈리오 우르곳 미스포츈 소나 스웨인 럭스 르블랑 이렐리아 트런들 카시오페아 케이틀린 레넥톤 카르마 마오카이 자르반4세 녹턴 리신 브랜드 럼블 베인 오리아나 요릭 레오나 오공 스카너 탈론 리븐 제라스 그레이브즈 쉬바나 피즈 볼리베어 아리 빅토르 세주아니 직스 노틸러스 피오라 룰루 헤카림 바루스 다리우스 드레이븐 제이스 자이라 다이애나 렝가 신드라 카직스 엘리스 제드 나미 바이 쓰레쉬 퀸 자크 리산드라 아트록스 루시안 징크스 야스오 벨코즈 브라움 나르 아지르 칼리스타 렉사이 바드 에코 탐켄치 킨드레드 일라오이 진 아우렐리온솔 탈리야 클레드 아이번 카밀 자야 라칸 케인 오른 조이 카이사 파이크 니코 사일러스 유미 키아나 세나 아펠리오스 세트 릴리아 요네 사미라 세라핀 렐 비에고 그웬 아크샨 벡스 제리 레나타글라스크 벨베스 닐라 크산테 밀리오 나파리 브라이어 흐웨이 스몰더 오로라 암베사 멜 유나라 자헨".split(" ");
 const TOTAL = ORDER.length;
 const norm = s => s.toLowerCase().replace(/[^0-9a-z가-힣]/g, "");
 const $ = id => document.getElementById(id);
 const grid = $("grid"), input = $("input"), countEl = $("count"), timerEl = $("timer");
-const list = ORDER, tiles = [], done = [], names = ORDER.map(id => [norm(id)].concat((ALIAS[id] || []).map(norm)));
+const list = ORDER, tiles = [], done = [], names = ORDER.map((id, i) => [norm(id), norm(KO[i])].concat((ALIAS[id] || []).map(norm)));
 let remaining = TOTAL, version = "", t0 = Date.now(), timerId = null;
 
 countEl.textContent = TOTAL + "/" + TOTAL;
@@ -44,19 +45,26 @@ function reveal(i) {
   done[i] = true;
   const img = document.createElement("img");
   tiles[i].appendChild(img);
-  ready.then(() => { if (version) img.src = "https://ddragon.leagueoflegends.com/cdn/" + version + "/img/champion/" + list[i] + ".png"; });
+  const art = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/" + list[i] + "_0.jpg";
+  ready.then(() => {
+    if (!version) { img.src = art; return; }
+    img.onerror = () => { img.onerror = null; img.src = art; };
+    img.src = "https://ddragon.leagueoflegends.com/cdn/" + version + "/img/champion/" + list[i] + ".png";
+  });
   remaining--;
   countEl.textContent = remaining + "/" + TOTAL;
   if (remaining === 0) { clearInterval(timerId); tick(); input.disabled = true; }
 }
 
-input.addEventListener("keydown", e => {
+function submit(e) {
   if (e.key !== "Enter") return;
   const q = norm(input.value);
   if (!q) return;
   const i = names.findIndex((n, k) => !done[k] && n.includes(q));
   if (i >= 0) { reveal(i); input.value = ""; }
-});
+}
+input.addEventListener("keydown", submit);
+input.addEventListener("keyup", submit);
 
 list.forEach(() => { const t = document.createElement("div"); t.className = "t"; grid.appendChild(t); tiles.push(t); });
 timerId = setInterval(tick, 200);
@@ -64,11 +72,9 @@ input.focus();
 
 const ready = (async () => {
   try {
-    const base = "https://ddragon.leagueoflegends.com/";
-    version = (await (await fetch(base + "api/versions.json")).json())[0];
-    const ko = await (await fetch(base + "cdn/" + version + "/data/ko_KR/champion.json")).json();
-    list.forEach((id, i) => { if (ko.data[id]) names[i].push(norm(ko.data[id].name)); });
-  } catch (e) { console.error(e); }
+    const r = await fetch("https://ddragon.leagueoflegends.com/api/versions.json", { signal: AbortSignal.timeout(4000) });
+    version = (await r.json())[0];
+  } catch (e) {}
 })();
 </script>
 </body>
